@@ -1,0 +1,11 @@
+{
+  "name": "redux-async-analytics",
+  "version": "1.0.0",
+  "description": "Redux middleware for registering actions, payloads, and callbacks for google analytics events.",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "Rob Gonnella",
+  "license": "ISC"
+}
