@@ -1,0 +1,18 @@
+{
+    "defaultSeverity": "error",
+    "extends": ["tslint:recommended"],
+    "rules": {
+      "max-line-length": {
+          "options": [80]
+      },
+      "indent": [true, "spaces", 2],
+      "quotemark": [true, "single"],
+      "no-conditional-assignment": true,
+      "no-consecutive-blank-lines": false,
+      "trailing-comma": false,
+      "no-var-requires": true,
+      "object-literal-sort-keys": false,
+      "prefer-const": true,
+      "interface-name": false
+    }
+}
