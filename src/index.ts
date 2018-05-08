@@ -1,33 +1,23 @@
-import { Action, GetState, Middleware, MiddlewareAPI } from 'redux';
+import { Middleware, MiddlewareAPI } from 'redux';
 
+export type GetState = () => any;
 
-export interface AnalyticsObj {
-  [name: string]: boolean | string | number;
+export type PayloadCallback<A> = (action: any, getState: GetState) => A;
+
+export type Payload<A> = PayloadCallback<A> | A;
+
+export interface ListenerInterface<A> {
+  [name: string]: Array<Payload<A>>;
 }
 
-export type PayloadCallback = (
-  action: Action,
-  getState: GetState
-) => AnalyticsObj;
+export type UserSendFunc<A> = (analytics: A, getState?: GetState) => void;
 
-export type Payload = PayloadCallback | AnalyticsObj;
+export type SendFunc<A> = (analytics: A) => void;
 
-export interface ListenerInterface {
-  [name: string]: Payload[];
-}
+export default class ReduxAnalyticsManager<A> {
 
-export type UserSendFunc = (
-  analytics: AnalyticsObj,
-  getState?: GetState
-) => void;
-
-export type SendFunc = (analytics: AnalyticsObj ) => void;
-
-
-export default class ReduxAnalyticsManager {
-
-  private send: SendFunc | undefined;
-  private listeners: ListenerInterface;
+  private send: SendFunc<A> | undefined;
+  private listeners: ListenerInterface<A>;
   private store: MiddlewareAPI | undefined;
 
   constructor() {
@@ -36,12 +26,12 @@ export default class ReduxAnalyticsManager {
     this.store = undefined;
   }
 
-  public setSendMethod(fn: UserSendFunc): void {
+  public setSendMethod(fn: UserSendFunc<A>): void {
     if (this.send) {
       throw Error('Can only set analytics send method once');
     }
 
-    this.send = (payload: AnalyticsObj) => {
+    this.send = (payload: A) => {
       if (!this.store) {
         throw Error(
           'Analytics manager store is missing. Make sure manager is ' +
@@ -52,7 +42,10 @@ export default class ReduxAnalyticsManager {
     };
   }
 
-  public registerAction(type: string, payload: Payload | Payload[]): void {
+  public registerAction(
+    type: string,
+    payload: Payload<A> | Array<Payload<A>>
+  ): void {
 
     if (!this.listeners[type]) {
       this.listeners[type] = [];
@@ -91,13 +84,13 @@ export default class ReduxAnalyticsManager {
     };
   }
 
-  private callListeners(action: Action): void {
+  private callListeners(action: any): void {
 
     const key = action.type;
 
     if (!this.listeners[key]) { return; }
 
-    this.listeners[key].forEach((payload: Payload) => {
+    this.listeners[key].forEach((payload: Payload<A>) => {
       if (!this.store) {
         throw Error(
           'Analytics manager was never initialized with createMiddleware method'
@@ -109,7 +102,7 @@ export default class ReduxAnalyticsManager {
       }
 
       if (typeof payload === 'function') {
-        payload = payload(action, this.store.getState);
+        payload = payload(action, this.store.getState) as A;
       }
 
       this.send(payload);

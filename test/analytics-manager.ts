@@ -1,4 +1,3 @@
-/// <reference path="../index.d.ts" />
 import * as chai from 'chai'
 import { createStore, applyMiddleware } from 'redux';
 import { spy } from 'sinon';
