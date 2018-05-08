@@ -28,8 +28,7 @@
     "posttest": "npm run lint"
   },
   "files": [
-    "dist",
-    "index.d.ts"
+    "dist"
   ],
   "devDependencies": {
     "@types/chai": "^4.1.3",
