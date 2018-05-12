@@ -10,8 +10,6 @@ module.exports = {
   output: {
     path: path.join(__dirname, 'dist'),
     filename: 'index.js',
-    library: 'ReduxAnalyticsManager',
-    libraryExport: 'default',
     libraryTarget: 'umd',
     globalObject: "typeof self !== 'undefined' ? self : this"
   },
