@@ -1,2 +1,6 @@
 node_modules/
 dist/
+lib/
+es/
+index.d.ts
+.nyc_output/
