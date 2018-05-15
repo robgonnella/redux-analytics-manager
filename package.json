@@ -1,6 +1,6 @@
 {
   "name": "redux-analytics-manager",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "description": "Redux middleware for registering actions to analytics events.",
   "author": "Rob Gonnella",
   "license": "MIT",
@@ -25,7 +25,9 @@
   "npmFileMap": [
     {
       "basePath": "dist",
-      "files": ["*.js"]
+      "files": [
+        "*.js"
+      ]
     }
   ],
   "scripts": {
@@ -52,8 +54,12 @@
   "nyc": {
     "check-coverage": true,
     "lines": "90",
-    "include": ["src"],
-    "extension": [".ts"]
+    "include": [
+      "src"
+    ],
+    "extension": [
+      ".ts"
+    ]
   },
   "devDependencies": {
     "@types/chai": "^4.1.3",
