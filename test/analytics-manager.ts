@@ -18,7 +18,8 @@ const spies: Spies = {
       if (Object.keys(data).length) { return data; }
       return action.data;
     }
-  )
+  ),
+  registerSpy5: spy()
 };
 
 function resetSpyHistory() {
@@ -36,7 +37,8 @@ function createAnalyticsMiddleware(): Middleware {
     Util.ACTION3, [
     Util.analyticsObject1, spies.registerSpy3]
   );
-  manager.registerAction(Util.SET_DATA, spies.registerSpy4);
+  manager.registerAction(Util.ACTION4, spies.registerSpy4);
+  manager.registerAction(Util.ACTION5, spies.registerSpy5);
   return manager.createMiddleware();
 }
 
@@ -106,20 +108,29 @@ describe('Redux Analytics Manager - Functionality', function() {
       eventLabel: 'fake-label'
     };
     const data2 = Util.analyticsObject4;
-    await this.store.dispatch(Util.setData(data1));
-    await this.store.dispatch(Util.setData(data2));
+    await this.store.dispatch(Util.actionCreator4(data1));
+    await this.store.dispatch(Util.actionCreator4(data2));
     chai.expect(sendSpy.firstCall.args[0]).to.deep.equal(data1);
     chai.expect(sendSpy.lastCall.args[0]).to.deep.equal(data1);
   });
 
   it(
-    'does\'t call sendMethod or registered callbacks on non-registered actions',
+    'doesn\'t call sendMethod or registered callbacks on non-registered actions',
     async function() {
       await this.store.dispatch({type: 'unregistered'});
       chai.expect(spies.sendSpy.calledOnce).to.be.false;
       chai.expect(spies.registerSpy2.calledOnce).to.be.false;
       chai.expect(spies.registerSpy3.calledOnce).to.be.false;
       chai.expect(spies.registerSpy4.calledOnce).to.be.false;
+    }
+  );
+
+  it (
+    'allows user to return void in registered action-callback',
+    async function() {
+      await this.store.dispatch(Util.actionCreator5());
+      chai.expect(spies.registerSpy5.calledOnce).to.be.true;
+      chai.expect(spies.sendSpy.calledOnce).to.be.false;
     }
   );
 });

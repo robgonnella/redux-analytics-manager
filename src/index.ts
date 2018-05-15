@@ -2,7 +2,10 @@ import { Middleware, MiddlewareAPI } from 'redux';
 
 export type GetState = () => any;
 
-export type PayloadCallback<A> = (action: any, getState: GetState) => A;
+export type PayloadCallback<A> = (
+  action: any,
+  getState: GetState
+) => A | void | undefined | null;
 
 export type Payload<A> = PayloadCallback<A> | A;
 
@@ -105,7 +108,9 @@ export default class ReduxAnalyticsManager<A> {
         payload = payload(action, this.store.getState) as A;
       }
 
-      this.send(payload);
+      if (payload) {
+        this.send(payload);
+      }
     });
   }
 }

@@ -18,7 +18,8 @@ interface State {
 export const ACTION1 = 'ACTION1';
 export const ACTION2 = 'ACTION2';
 export const ACTION3 = 'ACTION3';
-export const SET_DATA = 'SET_DATA';
+export const ACTION4 = 'ACTION4';
+export const ACTION5 = 'ACTION5';
 
 export const analyticsObject1: IAnalytics = {
   eventCategory: 'Category1',
@@ -44,6 +45,12 @@ export const analyticsObject4: IAnalytics = {
   eventLabel: 'Label4'
 }
 
+export const analyticsObject5: IAnalytics = {
+  eventCategory: 'Category5',
+  eventAction: 'Action5',
+  eventLabel: 'Label5'
+}
+
 export function actionCreator1(): IAnalyticsAction {
   return {
     type: ACTION1,
@@ -65,16 +72,23 @@ export function actionCreator3(): IAnalyticsAction {
   };
 }
 
-export function setData(data: IAnalytics): IAnalyticsAction {
+export function actionCreator4(data: IAnalytics): IAnalyticsAction {
   return {
-    type: SET_DATA,
+    type: ACTION4,
     data
-  }
+  };
+}
+
+export function actionCreator5(): IAnalyticsAction {
+  return {
+    type: ACTION5,
+    data: analyticsObject5
+  };
 }
 
 function reducer(state: State = {data: {}}, action: AnyAction) {
   switch (action.type) {
-    case SET_DATA:
+    case ACTION4:
       return {data: action.data};
     default:
       return state;
