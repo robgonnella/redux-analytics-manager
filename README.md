@@ -19,8 +19,8 @@ and the redux getState method.
   object from the registered action along with the redux getState method
   for further processing if necessary.
 - Register actions with either analytics objects, or callbacks. Callbacks are
-  passed the original action and the redux getState method and must return the 
-  an analytics object to be passed to send method.
+  passed the original action and the redux getState method. If the callback
+  doesn't return anything the send method won't be called.
 - Call the middleware create method
 
 If you register the same action more than once, the calls to your send method
@@ -41,6 +41,8 @@ function sendAnalytics(analyticObj, getState) {
 }
 
 manager.setSendMethod(sendAnalytics);
+
+// Sending plain object
 manager.registerAction(
     'MY FANCY ACTION', 
     {
@@ -49,6 +51,7 @@ manager.registerAction(
     }
 )
 
+// Register callback and return analytics object to be sent
 manager.registerAction(
     'SELECT PRODUCT',
     (action, getState) => {
@@ -62,6 +65,7 @@ manager.registerAction(
     }
 );
 
+// Register and array of listeners for a single action
 manager.registerAction(
     'LOTS TO DO',
     [
