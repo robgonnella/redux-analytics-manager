@@ -1,76 +1,78 @@
-import { Middleware, MiddlewareAPI } from 'redux';
+import { EventEmitter } from 'events';
+import { AnyAction, Middleware } from 'redux';
 
-export type GetState = () => any;
-
-export type PayloadCallback<A> = (
-  action: any,
-  getState: GetState
+export type PayloadCallback<A, S> = (
+  action: AnyAction,
+  currState: S,
+  nextState: S
 ) => A | void | undefined | null;
 
-export type Payload<A> = PayloadCallback<A> | A;
+export type Payload<A, S> = PayloadCallback<A, S> | A;
 
-export interface ListenerInterface<A> {
-  [name: string]: Array<Payload<A>>;
+export interface PayloadInterface<A, S> {
+  [name: string]: Array<Payload<A, S>>;
 }
 
-export type UserSendFunc<A> = (analytics: A, getState?: GetState) => void;
+export type UserSendFunc<A, S> = (
+  analytics: A,
+  currState?: S
+) => void;
 
-export type SendFunc<A> = (analytics: A) => void;
+export interface EventCallbackObj<S> {
+  action: AnyAction;
+  currState: S;
+  nextState: S;
+}
 
-export default class ReduxAnalyticsManager<A> {
+export class ReduxAnalyticsManager<A, S> {
 
-  private send: SendFunc<A> | undefined;
-  private listeners: ListenerInterface<A>;
-  private store: MiddlewareAPI | undefined;
+  private send: UserSendFunc<A, S> | undefined;
+  private payloads: PayloadInterface<A, S>;
+  private emitter: EventEmitter;
+  private initialized: boolean;
 
   constructor() {
     this.send = undefined;
-    this.listeners = {};
-    this.store = undefined;
+    this.payloads = {};
+    this.emitter = new EventEmitter();
+    this.initialized = false;
   }
 
-  public setSendMethod(fn: UserSendFunc<A>): void {
+  public setSendMethod(fn: UserSendFunc<A, S>): void {
     if (this.send) {
       throw Error('Can only set analytics send method once');
     }
 
-    this.send = (payload: A) => {
-      if (!this.store) {
-        throw Error(
-          'Analytics manager store is missing. Make sure manager is ' +
-          'initialized by calling the createMiddleware method'
-        );
-      }
-      fn(payload, this.store.getState);
-    };
+    this.send = fn;
   }
 
   public registerAction(
     type: string,
-    payload: Payload<A> | Array<Payload<A>>
+    payload: Payload<A, S> | Array<Payload<A, S>>
   ): void {
 
-    if (!this.listeners[type]) {
-      this.listeners[type] = [];
+    if (!this.payloads[type]) {
+      this.payloads[type] = [];
     }
 
     if (Array.isArray(payload)) {
-      this.listeners[type] = this.listeners[type].concat(payload);
+      this.payloads[type] = this.payloads[type].concat(payload);
     } else {
-      this.listeners[type].push(payload);
+      this.payloads[type].push(payload);
     }
+
+    this.listen(type);
   }
 
   public createMiddleware(): Middleware {
-
-    if (this.store) {
-      throw Error('Can only call createMiddleware once');
+    if (this.initialized) {
+      throw Error('Can only call createMiddlware once');
     }
 
-    if (!Object.keys(this.listeners).length) {
+    if (!Object.keys(this.payloads).length) {
       throw Error(
-        'No analytics actions registered. Register actions before calling ' +
-        'createMiddleware'
+        'No analytics actions registered. Register actions before ' +
+        'calling createMiddleware'
       );
     }
 
@@ -80,38 +82,34 @@ export default class ReduxAnalyticsManager<A> {
       );
     }
 
+    this.initialized = true;
+
     return (store) => (next) => (action) => {
-      this.store = store;
-      this.callListeners(action);
-      return next(action);
+      if (!this.payloads[action.type]) { return next(action); }
+      const currState = store.getState();
+      const nextAction = next(action);
+      const nextState = store.getState();
+      this.emitter.emit(action.type, {action, currState, nextState});
+      return nextAction;
     };
   }
 
-  private callListeners(action: any): void {
-
-    const key = action.type;
-
-    if (!this.listeners[key]) { return; }
-
-    this.listeners[key].forEach((payload: Payload<A>) => {
-      if (!this.store) {
-        throw Error(
-          'Analytics manager was never initialized with createMiddleware method'
-        );
-      }
-
-      if (!this.send) {
-        throw Error('Must set a send method before using analytics middleware');
-      }
+  private emitterCallback(data: EventCallbackObj<S>): void  {
+    const type = data.action.type;
+    this.payloads[type].forEach((payload: Payload<A, S>) => {
 
       if (typeof payload === 'function') {
-        payload = payload(action, this.store.getState) as A;
+        payload = payload(data.action, data.currState, data.nextState) as A;
       }
 
-      if (payload) {
-        this.send(payload);
+      if (payload && this.send) {
+        this.send(payload, data.currState);
       }
     });
+  }
+
+  private listen(type: string): void {
+    this.emitter.on(type, this.emitterCallback.bind(this));
   }
 }
 
