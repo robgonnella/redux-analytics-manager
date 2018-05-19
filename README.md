@@ -4,8 +4,8 @@
 
 This module works as redux middleware allowing you to listen for actions and
 send a specified analytics object. You can also register callbacks instead
-of sending vanilla objects. Callbacks are passed the original action
-and the redux getState method.
+of sending vanilla objects. Action callbacks are passed the original action, the
+current state, and the next state.
 
 ### Installation
 
@@ -16,10 +16,10 @@ and the redux getState method.
 
 - Define a send method to be used with your registered actions. You can use
   any analytics library. The send method will be passed the the analytics
-  object from the registered action along with the redux getState method
-  for further processing if necessary.
+  object from the registered action along with the current state for further
+  processing if necessary.
 - Register actions with either analytics objects, or callbacks. Callbacks are
-  passed the original action and the redux getState method. If the callback
+  passed the original action, the current state, and the next state. If the callback
   doesn't return anything the send method won't be called.
 - Call the middleware create method
 
@@ -30,19 +30,19 @@ will occur in the order they were defined.
 // Example using Google Analytics
 
 import { applyMiddleware, createStore } from 'redux';
-import AnalyticsManager from 'redux-analytics-manager';
+import { ReduxAnalyticsManager } from 'redux-analytics-manager';
 
-const manager = new AnalyticsManager();
+const manager = new ReduxAnalyticsManager();
 
 ga('create', 'UA-XXXXX-Y', 'auto');
 
-function sendAnalytics(analyticObj, getState) {
+function sendAnalytics(analyticObj, currState) {
     ga('send', analyticsObj);
 }
 
 manager.setSendMethod(sendAnalytics);
 
-// Sending plain object
+// Sending plain analytics object
 manager.registerAction(
     'MY FANCY ACTION', 
     {
@@ -51,35 +51,53 @@ manager.registerAction(
     }
 )
 
-// Register callback and return analytics object to be sent
+// Register callback and return analytics to be sent
 manager.registerAction(
-    'SELECT PRODUCT',
-    (action, getState) => {
+    'PURCHASE PRODUCT',
+    (action, currState, nextState) => {
         const product = action.product;
-        const region = getState().regionID;
+        const region = currState.regionID;
         return {
             eventCategory: region,
-            eventAction: 'product-selection',
+            eventAction: 'product-purchase',
             eventLabel: product
         };
     }
 );
 
-// Register and array of listeners for a single action
+// Register an array of listeners for a single action
 manager.registerAction(
-    'LOTS TO DO',
+    'DOWNLOAD IMAGE',
     [
         {eventCategory: 'page-visits', eventAction: 'page-visited'},
-        (action, getState) => {
-            const product = action.product;
-            const region = getState().regionID;
+        (action, currState, nextState) => {
+            const imageName = action.image;
+            const totalDownloads = nextState.images[imageName].downloads;
             return {
-                eventCategory: region,
-                eventAction: 'product-selection',
-                eventLabel: product
+                eventCategory: 'Images',
+                eventAction: 'image-downloaded',
+                eventLabel: imageName,
+                eventValue: totalDownloads
             };
         }
     ]
+);
+
+// Conditionally send analytics based on state
+manager.registerAction(
+    'LOGIN USER',
+    (action, currState, nextState) => {
+        const firstTime = (
+            currState.loginCount = 0 && nextState.loginCount === 1;
+        );
+        if (firstTime) {
+            return {
+                eventCategory: 'First Time Events',
+                eventAction: 'user-login',
+                eventLabel: action.userName
+            }
+        }
+    }
 );
 
 const analyticsMiddleware = manager.createMiddleware();

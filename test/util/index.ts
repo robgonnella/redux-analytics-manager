@@ -11,15 +11,22 @@ interface IAnalyticsAction {
   data: IAnalytics;
 }
 
-interface State {
-  data: IAnalytics | {};
+export interface State {
+  data: IAnalytics;
 }
 
+export const ACTION0 = 'ACTION0';
 export const ACTION1 = 'ACTION1';
 export const ACTION2 = 'ACTION2';
 export const ACTION3 = 'ACTION3';
 export const ACTION4 = 'ACTION4';
 export const ACTION5 = 'ACTION5';
+
+export const analyticsObject0: IAnalytics = {
+  eventCategory: 'Category0',
+  eventAction: 'Action0',
+  eventLabel: 'Label0'
+}
 
 export const analyticsObject1: IAnalytics = {
   eventCategory: 'Category1',
@@ -51,6 +58,13 @@ export const analyticsObject5: IAnalytics = {
   eventLabel: 'Label5'
 }
 
+export function actionCreator0(): IAnalyticsAction {
+  return {
+    type: ACTION0,
+    data: analyticsObject0
+  };
+}
+
 export function actionCreator1(): IAnalyticsAction {
   return {
     type: ACTION1,
@@ -72,10 +86,10 @@ export function actionCreator3(): IAnalyticsAction {
   };
 }
 
-export function actionCreator4(data: IAnalytics): IAnalyticsAction {
+export function actionCreator4(): IAnalyticsAction {
   return {
     type: ACTION4,
-    data
+    data: analyticsObject4
   };
 }
 
@@ -86,15 +100,13 @@ export function actionCreator5(): IAnalyticsAction {
   };
 }
 
-function reducer(state: State = {data: {}}, action: AnyAction) {
-  switch (action.type) {
-    case ACTION4:
-      return {data: action.data};
-    default:
-      return state;
-  }
+export const initialState: State = {data: analyticsObject0};
+
+function reducer(state: State = initialState, action: AnyAction) {
+  if (!action.data) { return state; }
+  return {data: action.data};
 }
 
 export function setUpStore(middleware: Middleware) {
-  return createStore(reducer, {data: {}}, applyMiddleware(middleware));
+  return createStore(reducer, applyMiddleware(middleware));
 }
