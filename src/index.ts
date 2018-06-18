@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { AnyAction, Middleware } from 'redux';
+import { AnyAction, Dispatch, Middleware, MiddlewareAPI } from 'redux';
 
 export type PayloadCallback<A, S> = (
   action: AnyAction,
@@ -60,6 +60,15 @@ export class ReduxAnalyticsManager<A, S> {
     this.listen(type);
   }
 
+  public registerActions(
+    types: string[],
+    payload: Payload<A, S> | Array<Payload<A, S>>
+  ): void {
+    for (const type of types) {
+      this.registerAction(type, payload);
+    }
+  }
+
   public createMiddleware(): Middleware {
     if (this.initialized) {
       throw Error('Can only call createMiddlware once');
@@ -80,14 +89,15 @@ export class ReduxAnalyticsManager<A, S> {
 
     this.initialized = true;
 
-    return (store) => (next) => (action) => {
-      if (!this.payloads[action.type]) { return next(action); }
-      const currState = store.getState();
-      const nextAction = next(action);
-      const nextState = store.getState();
-      this.emitter.emit(action.type, {action, currState, nextState});
-      return nextAction;
-    };
+    return (store: MiddlewareAPI) => (next: Dispatch<AnyAction>) =>
+      (action: AnyAction) => {
+        if (!this.payloads[action.type]) { return next(action); }
+        const currState = store.getState();
+        const nextAction = next(action);
+        const nextState = store.getState();
+        this.emitter.emit(action.type, {action, currState, nextState});
+        return nextAction;
+      };
   }
 
   private emitterCallback(data: EventCallbackObj<S>): void  {

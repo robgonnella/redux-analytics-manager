@@ -21,6 +21,8 @@ export const ACTION2 = 'ACTION2';
 export const ACTION3 = 'ACTION3';
 export const ACTION4 = 'ACTION4';
 export const ACTION5 = 'ACTION5';
+export const ACTION6 = 'ACTION6';
+export const ACTION7 = 'ACTION7';
 
 export const analyticsObject0: IAnalytics = {
   eventCategory: 'Category0',
@@ -56,6 +58,18 @@ export const analyticsObject5: IAnalytics = {
   eventCategory: 'Category5',
   eventAction: 'Action5',
   eventLabel: 'Label5'
+}
+
+export const analyticsObject6: IAnalytics = {
+  eventCategory: 'Category6',
+  eventAction: 'Action6',
+  eventLabel: 'Label6'
+}
+
+export const analyticsObject7: IAnalytics = {
+  eventCategory: 'Category7',
+  eventAction: 'Action7',
+  eventLabel: 'Label7'
 }
 
 export function actionCreator0(): IAnalyticsAction {
@@ -97,6 +111,20 @@ export function actionCreator5(): IAnalyticsAction {
   return {
     type: ACTION5,
     data: analyticsObject5
+  };
+}
+
+export function actionCreator6(): IAnalyticsAction {
+  return {
+    type: ACTION6,
+    data: analyticsObject6
+  };
+}
+
+export function actionCreator7(): IAnalyticsAction {
+  return {
+    type: ACTION7,
+    data: analyticsObject7
   };
 }
 
