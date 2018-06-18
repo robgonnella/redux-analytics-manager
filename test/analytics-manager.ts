@@ -184,13 +184,4 @@ describe('Redux Analytics Manager - Errors', function() {
       chai.expect(manager.createMiddleware.bind(manager)).to.throw();
     }
   );
-
-  it(
-    'throws if setSendMethod is called more than once',
-    function() {
-      const manager = new ReduxAnalyticsManager<Util.IAnalytics, Util.State>();
-      manager.setSendMethod(() => console.log('send method set'));
-      chai.expect(manager.setSendMethod.bind(manager)).to.throw();
-    }
-  );
 });

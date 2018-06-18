@@ -39,10 +39,6 @@ export class ReduxAnalyticsManager<A, S> {
   }
 
   public setSendMethod(fn: UserSendFunc<A, S>): void {
-    if (this.send) {
-      throw Error('Can only set analytics send method once');
-    }
-
     this.send = fn;
   }
 
