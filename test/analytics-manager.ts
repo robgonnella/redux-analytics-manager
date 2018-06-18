@@ -24,6 +24,11 @@ const spies: Spies = {
     (action: AnyAction, currState: Util.State, nextState: Util.State) => {
       return nextState.data;
     }
+  ),
+  registerSpy6: spy(
+    (action: AnyAction, currState: Util.State, nextState: Util.State) => {
+      return nextState.data;
+    }
   )
 };
 
@@ -45,6 +50,7 @@ function createAnalyticsMiddleware(): Middleware {
   );
   manager.registerAction(Util.ACTION4, spies.registerSpy4);
   manager.registerAction(Util.ACTION5, spies.registerSpy5);
+  manager.registerActions([Util.ACTION6, Util.ACTION7], spies.registerSpy6);
   return manager.createMiddleware();
 }
 
@@ -111,6 +117,22 @@ describe('Redux Analytics Manager - Functionality', function() {
     chai.expect(registerSpy3.lastCall.args[0]).to.deep.equal(action3);
     chai.expect(sendSpy.firstCall.args[0]).to.deep.equal(analyticObj1);
     chai.expect(sendSpy.lastCall.args[0]).to.deep.equal(analyticObj3);
+  });
+
+  it('allows users to register and array of actions', async function () {
+    const sendSpy = spies.sendSpy;
+    const analyticObj6 = Util.analyticsObject6;
+    const analyticObj7 = Util.analyticsObject7;
+    const registerSpy6 = spies.registerSpy6;
+    const action6 = Util.actionCreator6();
+    const action7 = Util.actionCreator7();
+    await this.store.dispatch(action6);
+    await this.store.dispatch(action7);
+    chai.expect(registerSpy6.firstCall.args[0]).to.deep.equal(action6);
+    chai.expect(registerSpy6.lastCall.args[0]).to.deep.equal(action7);
+    chai.expect(registerSpy6.callCount).to.be.equal(2);
+    chai.expect(sendSpy.firstCall.args[0]).to.deep.equal(analyticObj6);
+    chai.expect(sendSpy.lastCall.args[0]).to.deep.equal(analyticObj7);
   });
 
   it('gives user access to currState in registered callback',
