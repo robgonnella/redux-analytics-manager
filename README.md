@@ -19,12 +19,14 @@ current state, and the next state.
   object from the registered action along with the current state for further
   processing if necessary.
 - Register actions with either analytics objects, or callbacks. Callbacks are
-  passed the original action, the current state, and the next state. If the callback
-  doesn't return anything the send method won't be called.
+  passed the original action, the current state, and the next state. If the
+  callback doesn't return anything the send method won't be called.
 - Call the middleware create method
 
 If you register the same action more than once, the calls to your send method
-will occur in the order they were defined.
+will occur in the order they were defined. You can also use `registerActions`
+to register an array of actions to the same analytics object, callback, or a
+mixed array.
 
 ```javascript
 // Example using Google Analytics
@@ -37,7 +39,9 @@ const manager = new ReduxAnalyticsManager();
 ga('create', 'UA-XXXXX-Y', 'auto');
 
 function sendAnalytics(analyticObj, currState) {
-    ga('send', analyticsObj);
+    if (currState.analyticsEnabled) {
+        ga('send', analyticsObj);
+    }
 }
 
 manager.setSendMethod(sendAnalytics);
@@ -105,3 +109,26 @@ const analyticsMiddleware = manager.createMiddleware();
 const store = createStore(rootReducer, applyMiddleware(analyticsMiddlware));
 
 ```
+
+### Methods
+- **constructor:**
+    For typescript, pass an analytics object type and your appState type during
+    instantiation
+- **setSendMethod:**
+    User defined function that will be called with registered analytics object
+    or the returned analytics object from registered callback
+- **createMiddleware:**
+    Returns redux middleware to be used in the redux `applyMiddlware` method
+- **registerAction:**
+    Register a single action to an analytics object, callback, or mixed array
+    of either
+- **registerActions:**
+    Register an array of actions to an analytics object, callback, or a mixed
+    array of either
+- **deRegisterAction:**
+    Removes action listener and stops calling send method / callbacks for that
+    action
+- **deRegisterActions:**
+    Removes action listeners for an array of actions
+- **deRegisterAll:**
+    Removes all action listeners

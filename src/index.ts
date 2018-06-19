@@ -38,14 +38,14 @@ export class ReduxAnalyticsManager<A, S> {
     this.initialized = false;
   }
 
-  public setSendMethod(fn: UserSendFunc<A, S>): void {
+  public setSendMethod = (fn: UserSendFunc<A, S>): void => {
     this.send = fn;
   }
 
-  public registerAction(
+  public registerAction = (
     type: string,
     payload: Payload<A, S> | Array<Payload<A, S>>
-  ): void {
+  ): void => {
 
     if (!this.payloads[type]) {
       this.payloads[type] = [];
@@ -60,25 +60,34 @@ export class ReduxAnalyticsManager<A, S> {
     this.listen(type);
   }
 
-  public registerActions(
+  public registerActions = (
     types: string[],
     payload: Payload<A, S> | Array<Payload<A, S>>
-  ): void {
+  ): void => {
     for (const type of types) {
       this.registerAction(type, payload);
     }
   }
 
-  public createMiddleware(): Middleware {
+  public deRegisterAction = (type: string): void => {
+    delete this.payloads[type];
+    this.emitter.removeListener(type, this.emitterCallback);
+  }
+
+  public deRegisterActions = (types: string[]): void => {
+    for (const type of types) {
+      this.deRegisterAction(type);
+    }
+  }
+
+  public deRegisterAll = (): void => {
+    this.payloads = {};
+    this.emitter.removeAllListeners();
+  }
+
+  public createMiddleware = (): Middleware => {
     if (this.initialized) {
       throw Error('Can only call createMiddlware once');
-    }
-
-    if (!Object.keys(this.payloads).length) {
-      throw Error(
-        'No analytics actions registered. Register actions before ' +
-        'calling createMiddleware'
-      );
     }
 
     if (!this.send) {
@@ -100,7 +109,7 @@ export class ReduxAnalyticsManager<A, S> {
       };
   }
 
-  private emitterCallback(data: EventCallbackObj<S>): void  {
+  private emitterCallback = (data: EventCallbackObj<S>): void  => {
     const type = data.action.type;
     this.payloads[type].forEach((payload: Payload<A, S>) => {
 
@@ -115,7 +124,7 @@ export class ReduxAnalyticsManager<A, S> {
   }
 
   private listen(type: string): void {
-    this.emitter.on(type, this.emitterCallback.bind(this));
+    this.emitter.on(type, this.emitterCallback);
   }
 }
 

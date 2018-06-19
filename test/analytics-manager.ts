@@ -5,6 +5,8 @@ import * as Util from './util';
 import * as AnalyticsManager from '../src';
 
 const ReduxAnalyticsManager = AnalyticsManager.ReduxAnalyticsManager;
+let manager: AnalyticsManager.
+  ReduxAnalyticsManager<Util.IAnalytics, Util.State>;
 
 interface Spies {
   [key: string]: SinonSpy;
@@ -39,7 +41,7 @@ function resetSpyHistory() {
 }
 
 function createAnalyticsMiddleware(): Middleware {
-  const manager = new ReduxAnalyticsManager<Util.IAnalytics, Util.State>();
+  manager = new ReduxAnalyticsManager<Util.IAnalytics, Util.State>();
   manager.setSendMethod(spies.sendSpy);
   manager.registerAction(Util.ACTION0, spies.registerSpy0);
   manager.registerAction(Util.ACTION1, Util.analyticsObject1);
@@ -173,22 +175,59 @@ describe('Redux Analytics Manager - Functionality', function() {
       chai.expect(spies.sendSpy.calledOnce).to.be.false;
     }
   );
+
+  it('allows users to de-register an action', async function() {
+    const sendSpy = spies.sendSpy;
+    await this.store.dispatch(Util.actionCreator1());
+    chai.expect(sendSpy.callCount).to.equal(1);
+    manager.deRegisterAction(Util.ACTION1);
+    await this.store.dispatch(Util.actionCreator1());
+    chai.expect(sendSpy.callCount).to.equal(1);
+  });
+
+  it('allows users to de-register an array of actions', async function() {
+    const sendSpy = spies.sendSpy;
+    await this.store.dispatch(Util.actionCreator1());
+    await this.store.dispatch(Util.actionCreator2());
+    chai.expect(sendSpy.callCount).to.equal(2);
+    manager.deRegisterActions([Util.ACTION1, Util.ACTION2]);
+    await this.store.dispatch(Util.actionCreator1());
+    await this.store.dispatch(Util.actionCreator2());
+    chai.expect(sendSpy.callCount).to.equal(2);
+  });
+
+  it('allows users to de-register all actions at once', async function() {
+    const sendSpy = spies.sendSpy;
+    manager.deRegisterAll();
+    await this.store.dispatch(Util.actionCreator1());
+    await this.store.dispatch(Util.actionCreator2());
+    await this.store.dispatch(Util.actionCreator3());
+    await this.store.dispatch(Util.actionCreator4());
+    await this.store.dispatch(Util.actionCreator5());
+    await this.store.dispatch(Util.actionCreator6());
+    await this.store.dispatch(Util.actionCreator7());
+    chai.expect(sendSpy.calledOnce).to.be.false;
+  });
+
+  it('allows user to re-register actions', async function() {
+    const sendSpy = spies.sendSpy;
+    await this.store.dispatch(Util.actionCreator1());
+    chai.expect(sendSpy.callCount).to.equal(1);
+    manager.deRegisterAction(Util.ACTION1);
+    await this.store.dispatch(Util.actionCreator1());
+    chai.expect(sendSpy.callCount).to.equal(1);
+    manager.registerAction(Util.ACTION1, Util.analyticsObject1);
+    await this.store.dispatch(Util.actionCreator1());
+    chai.expect(sendSpy.callCount).to.equal(2);
+  });
+
 });
 
 describe('Redux Analytics Manager - Errors', function() {
   it(
-    'throws if createMiddleware is called without registering actions',
-    function() {
-      const manager = new ReduxAnalyticsManager<Util.IAnalytics, Util.State>();
-      manager.setSendMethod(() => console.log('send method set'));
-      chai.expect(manager.createMiddleware.bind(manager)).to.throw();
-    }
-  );
-
-  it(
     'throws if createMiddleware is called without setting send method',
     function() {
-      const manager = new ReduxAnalyticsManager<Util.IAnalytics, Util.State>();
+      manager = new ReduxAnalyticsManager<Util.IAnalytics, Util.State>();
       manager.registerAction('Whatever', Util.analyticsObject1);
       chai.expect(manager.createMiddleware.bind(manager)).to.throw();
     }
@@ -197,7 +236,7 @@ describe('Redux Analytics Manager - Errors', function() {
   it(
     'throws if createMiddleware is called more than once',
     function() {
-      const manager = new ReduxAnalyticsManager<Util.IAnalytics, Util.State>();
+      manager = new ReduxAnalyticsManager<Util.IAnalytics, Util.State>();
       manager.setSendMethod(function() {});
       manager.registerAction('Whatever', Util.analyticsObject1);
       const middleware = manager.createMiddleware();
