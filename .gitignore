@@ -1,6 +1,6 @@
 node_modules/
 dist/
-lib/
-es/
+commonjs/
+module/
 index.d.ts
 .nyc_output/

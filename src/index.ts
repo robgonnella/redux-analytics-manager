@@ -24,7 +24,11 @@ export interface EventCallbackObj<S> {
   nextState: S;
 }
 
-export class ReduxAnalyticsManager<A, S> {
+function isPayloadCallback<A, S>(p: any): p is PayloadCallback<A, S> {
+  return typeof p === 'function';
+}
+
+export class ReduxAnalyticsManager<A = any, S = any> {
 
   private send: UserSendFunc<A, S> | undefined;
   private payloads: PayloadInterface<A, S>;
@@ -64,8 +68,8 @@ export class ReduxAnalyticsManager<A, S> {
     types: string[],
     payload: Payload<A, S> | Array<Payload<A, S>>
   ): void => {
-    for (const type of types) {
-      this.registerAction(type, payload);
+    for (let i = 0; i < types.length; ++i) {
+      this.registerAction(types[i], payload);
     }
   }
 
@@ -75,8 +79,8 @@ export class ReduxAnalyticsManager<A, S> {
   }
 
   public deRegisterActions = (types: string[]): void => {
-    for (const type of types) {
-      this.deRegisterAction(type);
+    for (let i = 0; i < types.length; ++i) {
+      this.deRegisterAction(types[i]);
     }
   }
 
@@ -113,7 +117,7 @@ export class ReduxAnalyticsManager<A, S> {
     const type = data.action.type;
     this.payloads[type].forEach((payload: Payload<A, S>) => {
 
-      if (typeof payload === 'function') {
+      if (isPayloadCallback<A, S>(payload)) {
         payload = payload(data.action, data.currState, data.nextState) as A;
       }
 
@@ -123,9 +127,7 @@ export class ReduxAnalyticsManager<A, S> {
     });
   }
 
-  private listen(type: string): void {
+  private listen = (type: string): void => {
     this.emitter.on(type, this.emitterCallback);
   }
 }
-
-
