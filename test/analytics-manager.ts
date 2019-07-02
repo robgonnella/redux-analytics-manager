@@ -1,12 +1,10 @@
 import * as chai from 'chai'
 import { AnyAction, Middleware } from 'redux';
-import { spy, SinonSpy } from 'sinon';
+import { SinonSpy, spy } from 'sinon';
+import { ReduxAnalyticsManager } from '..';
 import * as Util from './util';
-import * as AnalyticsManager from '../src';
 
-const ReduxAnalyticsManager = AnalyticsManager.ReduxAnalyticsManager;
-let manager: AnalyticsManager.
-  ReduxAnalyticsManager<Util.IAnalytics, Util.State>;
+let manager: ReduxAnalyticsManager<Util.IAnalytics, Util.State>;
 
 interface Spies {
   [key: string]: SinonSpy;
