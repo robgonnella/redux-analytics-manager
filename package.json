@@ -18,6 +18,7 @@
     "analytics-manager"
   ],
   "main": "dist/index.min.js",
+  "module": "dist/index.min.js",
   "types": "./index.d.ts",
   "scripts": {
     "clean": "rimraf dist umd index.d.ts",
