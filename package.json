@@ -1,6 +1,6 @@
 {
   "name": "redux-analytics-manager",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "description": "Redux middleware for registering actions to analytics events.",
   "author": "Rob Gonnella",
   "license": "MIT",
