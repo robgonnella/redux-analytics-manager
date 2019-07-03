@@ -1,6 +1,5 @@
 node_modules/
 dist/
-commonjs/
-module/
+umd/
 index.d.ts
 .nyc_output/

@@ -17,35 +17,22 @@
     "analytics",
     "analytics-manager"
   ],
-  "main": "commonjs/index.js",
-  "module": "module/index.js",
+  "main": "dist/index.min.js",
   "types": "./index.d.ts",
-  "npmName": "redux-analytics-manager",
-  "npmFileMap": [
-    {
-      "basePath": "dist",
-      "files": [
-        "*.js"
-      ]
-    }
-  ],
   "scripts": {
-    "clean": "rimraf dist commonjs module index.d.ts",
+    "clean": "rimraf dist umd index.d.ts",
     "lint": "tslint src/*",
     "prepublishOnly": "npm run test && npm run build",
-    "watch": "tsc --watch",
-    "build:module": "tsc --target es5 --module es6 --outDir module && npm run build:declaration",
     "build:declaration": "tsc --declaration true --emitDeclarationOnly --outDir .",
-    "build:commonjs": "tsc --target es5 --module commonjs --outDir commonjs",
-    "minify-umd": "uglifyjs dist/index.js --compress --mangle --output dist/index.min.js",
-    "build": "npm run clean && npm run build:module && npm run build:commonjs && rollup -c && npm run minify-umd",
-    "test": "nyc mocha -r ts-node/register test/*.ts",
+    "minify": "uglifyjs dist/index.js --compress --mangle --output dist/index.min.js",
+    "minify:umd": "uglifyjs umd/index.js --compress --mangle --output umd/index.min.js",
+    "build": "npm run clean && rollup -c && npm run build:declaration && npm run minify && npm run minify:umd",
+    "test": "npm run build && nyc mocha -r ts-node/register test/*.ts",
     "posttest": "npm run lint"
   },
   "files": [
     "dist",
-    "module",
-    "commonjs",
+    "umd",
     "index.d.ts"
   ],
   "nyc": {
@@ -76,6 +63,7 @@
     "rollup-plugin-commonjs": "^9.3.4",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^3.4.0",
+    "rollup-plugin-typescript": "^1.0.1",
     "rollup-plugin-uglify": "^6.0.2",
     "sinon": "^5.0.4",
     "ts-node": "^7.0.1",
