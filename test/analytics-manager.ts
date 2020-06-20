@@ -1,7 +1,7 @@
-import * as chai from 'chai'
+import * as chai from 'chai';
 import { AnyAction, Middleware } from 'redux';
 import { SinonSpy, spy } from 'sinon';
-import { ReduxAnalyticsManager } from '..';
+import { ReduxAnalyticsManager } from '../dist';
 import * as Util from './util';
 
 let manager: ReduxAnalyticsManager<Util.IAnalytics, Util.State>;
@@ -18,18 +18,18 @@ const spies: Spies = {
   registerSpy4: spy(
     (action: AnyAction, currState: Util.State, nextState: Util.State) => {
       return currState.data;
-    }
+    },
   ),
   registerSpy5: spy(
     (action: AnyAction, currState: Util.State, nextState: Util.State) => {
       return nextState.data;
-    }
+    },
   ),
   registerSpy6: spy(
     (action: AnyAction, currState: Util.State, nextState: Util.State) => {
       return nextState.data;
-    }
-  )
+    },
+  ),
 };
 
 function resetSpyHistory() {
@@ -44,19 +44,18 @@ function createAnalyticsMiddleware(): Middleware {
   manager.registerAction(Util.ACTION0, spies.registerSpy0);
   manager.registerAction(Util.ACTION1, Util.analyticsObject1);
   manager.registerAction(Util.ACTION2, spies.registerSpy2);
-  manager.registerAction(
-    Util.ACTION3, [
-    Util.analyticsObject1, spies.registerSpy3]
-  );
+  manager.registerAction(Util.ACTION3, [
+    Util.analyticsObject1,
+    spies.registerSpy3,
+  ]);
   manager.registerAction(Util.ACTION4, spies.registerSpy4);
   manager.registerAction(Util.ACTION5, spies.registerSpy5);
   manager.registerActions([Util.ACTION6, Util.ACTION7], spies.registerSpy6);
   return manager.createMiddleware();
 }
 
-describe('Redux Analytics Manager - Functionality', function() {
-
-  beforeEach(function() {
+describe('Redux Analytics Manager - Functionality', function () {
+  beforeEach(function () {
     resetSpyHistory();
     const middleware: Middleware = createAnalyticsMiddleware();
     this.store = Util.setUpStore(middleware);
@@ -64,49 +63,44 @@ describe('Redux Analytics Manager - Functionality', function() {
 
   it(
     'calls send method with analytics object and current state ' +
-    '- registered object',
-    async function() {
+      '- registered object',
+    async function () {
       const sendSpy = spies.sendSpy;
       const analyticObj1 = Util.analyticsObject1;
       await this.store.dispatch(Util.actionCreator1());
       chai.expect(sendSpy.calledOnce).to.be.true;
       chai.expect(sendSpy.lastCall.args[0]).to.deep.equal(analyticObj1);
       chai.expect(sendSpy.lastCall.args[1]).to.deep.equal(Util.initialState);
-    }
+    },
   );
 
   it(
     'calls send method with analytics object and current state ' +
-    '- registerd callback',
-    async function() {
+      '- registerd callback',
+    async function () {
       const sendSpy = spies.sendSpy;
       const analyticObj2 = Util.analyticsObject2;
       await this.store.dispatch(Util.actionCreator2());
       chai.expect(sendSpy.calledOnce).to.be.true;
       chai.expect(sendSpy.lastCall.args[0]).to.deep.equal(analyticObj2);
       chai.expect(sendSpy.lastCall.args[1]).to.deep.equal(Util.initialState);
-    }
+    },
   );
 
-  it(
-    'calls registered action callback with action, currState, and nextState',
-    async function() {
-      const registerSpy2 = spies.registerSpy2;
-      const analyticObj2 = Util.analyticsObject2;
-      const action2 = Util.actionCreator2();
-      await this.store.dispatch(action2);
-      chai.expect(registerSpy2.calledOnce).to.be.true;
-      chai.expect(registerSpy2.lastCall.args[0]).to.deep.equal(action2);
-      chai.expect(registerSpy2.lastCall.args[1]).to.deep.equal(
-        Util.initialState
-      );
-      chai.expect(registerSpy2.lastCall.args[2]).to.deep.equal(
-        {data: analyticObj2}
-      );
-    }
-  );
+  it('calls registered action callback with action, currState, and nextState', async function () {
+    const registerSpy2 = spies.registerSpy2;
+    const analyticObj2 = Util.analyticsObject2;
+    const action2 = Util.actionCreator2();
+    await this.store.dispatch(action2);
+    chai.expect(registerSpy2.calledOnce).to.be.true;
+    chai.expect(registerSpy2.lastCall.args[0]).to.deep.equal(action2);
+    chai.expect(registerSpy2.lastCall.args[1]).to.deep.equal(Util.initialState);
+    chai
+      .expect(registerSpy2.lastCall.args[2])
+      .to.deep.equal({ data: analyticObj2 });
+  });
 
-  it('allows user to register an array of action listeners', async function() {
+  it('allows user to register an array of action listeners', async function () {
     const sendSpy = spies.sendSpy;
     const registerSpy3 = spies.registerSpy3;
     const analyticObj1 = Util.analyticsObject1;
@@ -135,46 +129,36 @@ describe('Redux Analytics Manager - Functionality', function() {
     chai.expect(sendSpy.lastCall.args[0]).to.deep.equal(analyticObj7);
   });
 
-  it('gives user access to currState in registered callback',
-    async function() {
-      const sendSpy = spies.sendSpy;
-      await this.store.dispatch(Util.actionCreator4());
-      chai.expect(
-        sendSpy.firstCall.args[0]
-      ).to.deep.equal(Util.initialState.data);
-    }
-  );
+  it('gives user access to currState in registered callback', async function () {
+    const sendSpy = spies.sendSpy;
+    await this.store.dispatch(Util.actionCreator4());
+    chai
+      .expect(sendSpy.firstCall.args[0])
+      .to.deep.equal(Util.initialState.data);
+  });
 
-  it('gives user access to nextState in registered callback',
-    async function() {
-      const sendSpy = spies.sendSpy;
-      const analytics = Util.analyticsObject5;
-      await this.store.dispatch(Util.actionCreator5());
-      chai.expect(sendSpy.firstCall.args[0]).to.deep.equal(analytics);
-    }
-  );
+  it('gives user access to nextState in registered callback', async function () {
+    const sendSpy = spies.sendSpy;
+    const analytics = Util.analyticsObject5;
+    await this.store.dispatch(Util.actionCreator5());
+    chai.expect(sendSpy.firstCall.args[0]).to.deep.equal(analytics);
+  });
 
-  it(
-    'doesn\'t call sendMethod or registered callbacks on unregistered actions',
-    async function() {
-      await this.store.dispatch({type: 'unregistered'});
-      chai.expect(spies.sendSpy.calledOnce).to.be.false;
-      chai.expect(spies.registerSpy2.calledOnce).to.be.false;
-      chai.expect(spies.registerSpy3.calledOnce).to.be.false;
-      chai.expect(spies.registerSpy4.calledOnce).to.be.false;
-    }
-  );
+  it("doesn't call sendMethod or registered callbacks on unregistered actions", async function () {
+    await this.store.dispatch({ type: 'unregistered' });
+    chai.expect(spies.sendSpy.calledOnce).to.be.false;
+    chai.expect(spies.registerSpy2.calledOnce).to.be.false;
+    chai.expect(spies.registerSpy3.calledOnce).to.be.false;
+    chai.expect(spies.registerSpy4.calledOnce).to.be.false;
+  });
 
-  it (
-    'doesn\'t call send if action callback returns void',
-    async function() {
-      await this.store.dispatch(Util.actionCreator0());
-      chai.expect(spies.registerSpy0.calledOnce).to.be.true;
-      chai.expect(spies.sendSpy.calledOnce).to.be.false;
-    }
-  );
+  it("doesn't call send if action callback returns void", async function () {
+    await this.store.dispatch(Util.actionCreator0());
+    chai.expect(spies.registerSpy0.calledOnce).to.be.true;
+    chai.expect(spies.sendSpy.calledOnce).to.be.false;
+  });
 
-  it('allows users to de-register an action', async function() {
+  it('allows users to de-register an action', async function () {
     const sendSpy = spies.sendSpy;
     await this.store.dispatch(Util.actionCreator1());
     chai.expect(sendSpy.callCount).to.equal(1);
@@ -183,7 +167,7 @@ describe('Redux Analytics Manager - Functionality', function() {
     chai.expect(sendSpy.callCount).to.equal(1);
   });
 
-  it('allows users to de-register an array of actions', async function() {
+  it('allows users to de-register an array of actions', async function () {
     const sendSpy = spies.sendSpy;
     await this.store.dispatch(Util.actionCreator1());
     await this.store.dispatch(Util.actionCreator2());
@@ -194,7 +178,7 @@ describe('Redux Analytics Manager - Functionality', function() {
     chai.expect(sendSpy.callCount).to.equal(2);
   });
 
-  it('allows users to de-register all actions at once', async function() {
+  it('allows users to de-register all actions at once', async function () {
     const sendSpy = spies.sendSpy;
     manager.deRegisterAll();
     await this.store.dispatch(Util.actionCreator1());
@@ -207,7 +191,7 @@ describe('Redux Analytics Manager - Functionality', function() {
     chai.expect(sendSpy.calledOnce).to.be.false;
   });
 
-  it('allows user to re-register actions', async function() {
+  it('allows user to re-register actions', async function () {
     const sendSpy = spies.sendSpy;
     await this.store.dispatch(Util.actionCreator1());
     chai.expect(sendSpy.callCount).to.equal(1);
@@ -218,29 +202,22 @@ describe('Redux Analytics Manager - Functionality', function() {
     await this.store.dispatch(Util.actionCreator1());
     chai.expect(sendSpy.callCount).to.equal(2);
   });
-
 });
 
-describe('Redux Analytics Manager - Errors', function() {
-  it(
-    'throws if createMiddleware is called without setting send method',
-    function() {
-      manager = new ReduxAnalyticsManager<Util.IAnalytics, Util.State>();
-      manager.registerAction('Whatever', Util.analyticsObject1);
-      chai.expect(manager.createMiddleware.bind(manager)).to.throw();
-    }
-  );
+describe('Redux Analytics Manager - Errors', function () {
+  it('throws if createMiddleware is called without setting send method', function () {
+    manager = new ReduxAnalyticsManager<Util.IAnalytics, Util.State>();
+    manager.registerAction('Whatever', Util.analyticsObject1);
+    chai.expect(manager.createMiddleware.bind(manager)).to.throw();
+  });
 
-  it(
-    'throws if createMiddleware is called more than once',
-    function() {
-      manager = new ReduxAnalyticsManager<Util.IAnalytics, Util.State>();
-      manager.setSendMethod(function() {});
-      manager.registerAction('Whatever', Util.analyticsObject1);
-      const middleware = manager.createMiddleware();
-      const store = Util.setUpStore(middleware);
-      store.dispatch({type: 'Whatever'});
-      chai.expect(manager.createMiddleware.bind(manager)).to.throw();
-    }
-  );
+  it('throws if createMiddleware is called more than once', function () {
+    manager = new ReduxAnalyticsManager<Util.IAnalytics, Util.State>();
+    manager.setSendMethod(function () {});
+    manager.registerAction('Whatever', Util.analyticsObject1);
+    const middleware = manager.createMiddleware();
+    const store = Util.setUpStore(middleware);
+    store.dispatch({ type: 'Whatever' });
+    chai.expect(manager.createMiddleware.bind(manager)).to.throw();
+  });
 });
