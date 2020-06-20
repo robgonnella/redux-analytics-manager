@@ -1,9 +1,9 @@
-import builtins from 'rollup-plugin-node-builtins';
+import nodePolyfills from 'rollup-plugin-node-polyfills';
 import babel from 'rollup-plugin-babel';
 import resolve from '@rollup/plugin-node-resolve';
 import rollupTypescript from 'rollup-plugin-typescript';
 
-const plugins = [resolve(), builtins(), babel(), rollupTypescript()];
+const plugins = [resolve(), nodePolyfills(), babel(), rollupTypescript()];
 
 export default [
   {
